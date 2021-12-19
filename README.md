@@ -50,7 +50,7 @@
 3. Minor fixes 
 4. Добавил use_cuda в prior, sample для удобства
 5. Стандартизировал модели, чтобы имели prior, sample
+6. Логгирование в train_model на wandb
 
 ### TODO
 - [ ] Сделать установку через pip install с нужными зависимостями
-- [ ] Добавить логгирование в train_epoch/eval_model
