@@ -1,3 +1,6 @@
+
+
+
 def train_epoch(model, train_loader, optimizer, use_cuda, loss_key='total'):
     model.train()
   
@@ -44,6 +47,9 @@ def train_model(model, train_loader, test_loader, epochs, lr, use_tqdm=False, us
         train_loss = train_epoch(model, train_loader, optimizer, use_cuda, loss_key)
         test_loss = eval_model(model, test_loader, use_cuda)
 
+        for k in train_loss.keys():
+            wandb.log({f'{k}_train': train_loss[k], f'{k}_test': test_loss[k]})
+            
         for k in train_loss.keys():
             train_losses[k].extend(train_loss[k])
             test_losses[k].append(test_loss[k])
