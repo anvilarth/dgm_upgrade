@@ -51,6 +51,7 @@
 4. Добавил use_cuda в prior, sample для удобства
 5. Стандартизировал модели, чтобы имели prior, sample
 6. Логгирование в train_model на wandb
+7. Убрал ошибку в visualize_mnist_image (замена train_data на data)
 
 ### TODO
 - [ ] Сделать установку через pip install с нужными зависимостями

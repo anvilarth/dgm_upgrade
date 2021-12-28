@@ -1,4 +1,13 @@
+import numpy as np
+import pickle
+import torch
+import wandb
 
+from collections import defaultdict
+from matplotlib import pyplot as plt
+from torch import optim
+from torchvision.utils import make_grid
+from tqdm import tqdm
 
 
 def train_epoch(model, train_loader, optimizer, use_cuda, loss_key='total'):
@@ -103,5 +112,5 @@ def show_samples(samples, title, nrow=10):
 
 def visualize_mnist_images(data, title):
     idxs = np.random.choice(len(data), replace=False, size=(100,))
-    images = train_data[idxs]
+    images = data[idxs]
     show_samples(images, title)
