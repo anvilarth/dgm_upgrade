@@ -7,7 +7,7 @@ from collections import defaultdict
 from matplotlib import pyplot as plt
 from torch import optim
 from torchvision.utils import make_grid
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 
 
 def train_epoch(model, train_loader, optimizer, use_cuda, loss_key='total'):
