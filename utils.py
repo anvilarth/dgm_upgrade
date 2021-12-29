@@ -24,6 +24,10 @@ def train_epoch(model, train_loader, optimizer, use_cuda, loss_key='total'):
 
         for k, v in losses.items():
             stats[k].append(v.item())
+        
+        for k, v in losses.items():
+            wandb.log({f'{k}_train': v.item()})
+
     return stats
 
 
@@ -43,7 +47,19 @@ def eval_model(model, data_loader, use_cuda):
     return stats
 
 
-def train_model(model, train_loader, test_loader, epochs, lr, use_tqdm=False, use_cuda=False, loss_key='total_loss'):
+def train_model(model, 
+                train_loader, 
+                test_loader, 
+                epochs, 
+                lr, 
+                noise=None, 
+                preprocess=lambda x: x,
+                n_samples=10, 
+                use_tqdm=False, 
+                use_cuda=False, 
+                loss_key='total_loss'
+                ):
+
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
     train_losses = defaultdict(list)
@@ -56,9 +72,17 @@ def train_model(model, train_loader, test_loader, epochs, lr, use_tqdm=False, us
         train_loss = train_epoch(model, train_loader, optimizer, use_cuda, loss_key)
         test_loss = eval_model(model, test_loader, use_cuda)
 
-        for k in train_loss.keys():
-            wandb.log({f'{k}_train': train_loss[k], f'{k}_test': test_loss[k]})
-            
+        with torch.no_grad():
+            if noise is not None:
+                samples = model.sample(noise=noise)
+            else:
+                samples = model.sample(n_samples)
+        images = wandb.Image(preprocess(samples))
+        wandb.log({"Samples": images})
+
+        for k in test_loss.keys():
+            wandb.log({f'{k}_test': test_loss[k]})
+
         for k in train_loss.keys():
             train_losses[k].extend(train_loss[k])
             test_losses[k].append(test_loss[k])
@@ -66,7 +90,7 @@ def train_model(model, train_loader, test_loader, epochs, lr, use_tqdm=False, us
 
 
 
-def plot_training_curves(train_losses, test_losses):
+def plot_training_curves(train_losses, test_losses, logscale=False):
     n_train = len(train_losses[list(train_losses.keys())[0]])
     n_test = len(test_losses[list(train_losses.keys())[0]])
     x_train = np.linspace(0, n_test - 1, n_train)
@@ -79,11 +103,15 @@ def plot_training_curves(train_losses, test_losses):
     for key, value in test_losses.items():
         plt.plot(x_test, value, label=key + '_test')
 
+    if logscale:
+        plt.semilogy()
+
     plt.legend(fontsize=12)
     plt.xlabel('Epoch', fontsize=14)
     plt.ylabel('Loss', fontsize=14)
     plt.xticks(fontsize=12)
     plt.yticks(fontsize=12)
+    plt.grid()
     plt.show()
 
 
@@ -99,13 +127,11 @@ def load_pickle(path, flatten=True):
         test_data = test_data.reshape(-1, 28 * 28)
     return train_data, test_data
 
-def show_samples(samples, title, nrow=10):
-    samples = torch.FloatTensor(samples).reshape(-1, 28, 28)
-    samples = torch.unsqueeze(samples, axis=1)
-    grid_img = make_grid(samples, nrow=nrow)
+def show_samples(samples, title, preprocess=lambda x: x):
+    grid_img = preprocess(samples)
     plt.figure()
     plt.title(title)
-    plt.imshow(grid_img.permute(1, 2, 0))
+    plt.imshow(grid_img)
     plt.axis('off')
     plt.show()
 
@@ -113,4 +139,9 @@ def show_samples(samples, title, nrow=10):
 def visualize_mnist_images(data, title):
     idxs = np.random.choice(len(data), replace=False, size=(100,))
     images = data[idxs]
-    show_samples(images, title)
+    show_samples(images, title, preprocess=grid_preprocessing)
+
+def grid_preprocessing(samples):
+    grid_samples = make_grid(samples, nrow = int(np.sqrt(len(samples))))
+    grid_samples = grid_samples.permute(1, 2, 0) * 255
+    return grid_samples.numpy()

@@ -51,7 +51,13 @@
 4. Добавил use_cuda в prior, sample для удобства
 5. Стандартизировал модели, чтобы имели prior, sample
 6. Логгирование в train_model на wandb
-7. Убрал ошибку в visualize_mnist_image (замена train_data на data)
+7. Добавил аргумент core для сэмплирования
+8. ДЗ1: Убрал ошибку в visualize_mnist_image (замена train_data на data)
+9. ДЗ1: Изменил test_loss assert, так как поменял loss
+10. Пофиксил в plot_2d_data bins, которое может выдавать неправильного размера  картинку
+11. ДЗ1: Заменил np.mgrid на torch.meshgrid
+12. ДЗ1: Добавил преобразование MNIST в torch.tensor (иначе, cross_entropy не работает)
+13. ДЗ1: Добавил torch.no_grad() для sample
 
 ### TODO
 - [ ] Сделать установку через pip install с нужными зависимостями
