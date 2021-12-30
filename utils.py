@@ -73,13 +73,14 @@ def train_model(model,
         train_loss = train_epoch(model, train_loader, optimizer, use_cuda, loss_key)
         test_loss = eval_model(model, test_loader, use_cuda)
 
-        with torch.no_grad():
-            if noise is not None:
-                samples = model.sample(noise=noise)
-            else:
-                samples = model.sample(n_samples)
-        images = wandb.Image(preprocess(samples))
-        wandb.log({"Samples": images})
+        if n_samples > 0 or core is not None:
+            with torch.no_grad():
+                if noise is not None:
+                    samples = model.sample(noise=noise)
+                else:
+                    samples = model.sample(n_samples)
+            images = wandb.Image(preprocess(samples))
+            wandb.log({"Samples": images})
 
         for k in test_loss.keys():
             wandb.log({f'{k}_test': test_loss[k]})
@@ -91,7 +92,7 @@ def train_model(model,
 
 
 
-def plot_training_curves(train_losses, test_losses, logscale=False):
+def plot_training_curves(train_losses, test_losses, logscale_y=False, logscale_x=False):
     n_train = len(train_losses[list(train_losses.keys())[0]])
     n_test = len(test_losses[list(train_losses.keys())[0]])
     x_train = np.linspace(0, n_test - 1, n_train)
@@ -104,8 +105,11 @@ def plot_training_curves(train_losses, test_losses, logscale=False):
     for key, value in test_losses.items():
         plt.plot(x_test, value, label=key + '_test')
 
-    if logscale:
+    if logscale_y:
         plt.semilogy()
+    
+    if logscale_x:
+        plt.semilogx()
 
     plt.legend(fontsize=12)
     plt.xlabel('Epoch', fontsize=14)
@@ -119,8 +123,7 @@ def plot_training_curves(train_losses, test_losses, logscale=False):
 def load_pickle(path, flatten=True):
     with open(path, 'rb') as f:
         data = pickle.load(f)
-    train_data = data['train'].astype('float32')[:, :, :, [0]] > 128
-    test_data = data['test'].astype('float32')[:, :, :, [0]] > 128
+    train_data, test_data = data['train'], data['test']
     train_data = np.transpose(train_data.astype('uint8'), (0, 3, 1, 2))
     test_data = np.transpose(test_data.astype('uint8'), (0, 3, 1, 2))
     if flatten:
@@ -137,12 +140,12 @@ def show_samples(samples, title, preprocess=lambda x: x):
     plt.show()
 
 
-def visualize_mnist_images(data, title):
+def visualize_images(data, title):
     idxs = np.random.choice(len(data), replace=False, size=(100,))
     images = data[idxs]
     show_samples(images, title, preprocess=grid_preprocessing)
 
 def grid_preprocessing(samples):
     grid_samples = make_grid(samples, nrow = int(np.sqrt(len(samples))))
-    grid_samples = grid_samples.permute(1, 2, 0) * 255
+    grid_samples = grid_samples.permute(1, 2, 0) 
     return grid_samples.numpy()
