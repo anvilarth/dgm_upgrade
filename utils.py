@@ -73,7 +73,7 @@ def train_model(model,
         train_loss = train_epoch(model, train_loader, optimizer, use_cuda, loss_key)
         test_loss = eval_model(model, test_loader, use_cuda)
 
-        if n_samples > 0 or core is not None:
+        if n_samples > 0 or noise is not None:
             with torch.no_grad():
                 if noise is not None:
                     samples = model.sample(noise=noise)
