@@ -67,6 +67,7 @@ def train_model(model,
     forrange = tqdm(range(epochs)) if use_tqdm else range(epochs)
     if use_cuda:
         model = model.cuda()
+        
     for epoch in forrange:
         model.train()
         train_loss = train_epoch(model, train_loader, optimizer, use_cuda, loss_key)
