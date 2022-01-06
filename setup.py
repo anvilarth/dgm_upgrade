@@ -17,6 +17,6 @@ setup(
         'gdown',
         'scikit-learn',
         'wandb',
-    ]
+    ],
     license='MIT License',
 )
