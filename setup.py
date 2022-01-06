@@ -9,7 +9,6 @@ setup(
         'numpy', 
         'matplotlib',
         'pillow',
-        'pickle',
         'tqdm',
         'torch',
         'torchvision', 
