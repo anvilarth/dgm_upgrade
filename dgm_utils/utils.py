@@ -2,7 +2,6 @@ import numpy as np
 import pickle
 import torch
 import wandb
-import gdown
 
 from collections import defaultdict
 from matplotlib import pyplot as plt
